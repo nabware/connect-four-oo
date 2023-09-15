@@ -7,12 +7,13 @@
 
 class Game {
   /** Initialize game */
-  constructor(height, width) {
+  constructor(player1, player2, height = 6, width = 7) {
     this.height = height;
     this.width = width;
-    this.currPlayer = 1; // active player: 1 or 2
+    this.players = [player1, player2];
+    this.currPlayer = this.player1; // active player: 1 or 2
+    this.gameOver = false;
 
-    /** Start game */
     this.makeBoard();
     this.makeHtmlBoard();
   }
@@ -78,7 +79,7 @@ class Game {
   placeInTable(y, x) {
     const piece = document.createElement('div');
     piece.classList.add('piece');
-    piece.classList.add(`p${this.currPlayer}`);
+    piece.style.backgroundColor = this.currPlayer.color;
 
     const spot = document.getElementById(`c-${y}-${x}`);
     spot.append(piece);
@@ -93,6 +94,8 @@ class Game {
   /** handleClick: handle click of column top to play piece */
 
   handleClick(evt) {
+    if (this.gameOver) return;
+
     // get x from ID of clicked cell
     const x = +evt.target.id;
 
@@ -108,7 +111,8 @@ class Game {
 
     // check for win
     if (this.checkForWin()) {
-      return this.endGame(`Player ${this.currPlayer} won!`);
+      this.gameOver = true;
+      return this.endGame(`The ${this.currPlayer.color} player won!`);
     }
 
     // check for tie
@@ -117,7 +121,7 @@ class Game {
     }
 
     // switch players
-    this.currPlayer = this.currPlayer === 1 ? 2 : 1;
+    this.currPlayer = this.currPlayer === this.players[0] ? this.players[1] : this.players[0];
   }
 
   /** checkForWin: check board cell-by-cell for "does a win start here?" */
@@ -157,4 +161,18 @@ class Game {
   }
 }
 
-new Game(6, 7);
+class Player {
+  constructor(color) {
+    this.color = color;
+  }
+}
+
+const startGameButton = document.getElementById('start-game-button');
+startGameButton.addEventListener('click', () => {
+  new Game(
+    new Player(document.getElementById("player1-color").value),
+    new Player(document.getElementById("player2-color").value)
+  );
+});
+
+// new Game(new Player("red"), new Player("blue"), 6, 7);
